@@ -18,14 +18,15 @@ public class EmployeeApplication {
         List<Employee> employeeList = new ArrayList<>();
 
         System.out.println("-=-=-=-=--=-");
-        System.out.println("EMPLOYEE APP");
+        System.out.println("EMPLOYEE SYSTEM");
         System.out.println("-=-=-=-=--=-");
 
-        while (menuOption != 4) {
+        while (menuOption != 5) {
             System.out.println("\n1 - Cadastrar novo funcionário.");
             System.out.println("2 - Listar todos os funcionários.");
             System.out.println("3 - Excluir funcionário.");
-            System.out.println("4 - Encerrar programa.");
+            System.out.println("4 - Aumentar salário.");
+            System.out.println("5 - Encerrar programa.");
             System.out.print("\nDigite a ação escolhida: ");
             menuOption = scanner.nextInt();
             scanner.nextLine();
@@ -75,6 +76,16 @@ public class EmployeeApplication {
                 Employee employee = new Employee();
                 employee.removeEmployee(idToRemove, employeeList);
 
+
+            }
+            else if (menuOption == 4) {
+                System.out.println("\nDigite o Id do funcionário que receberá o aumento: ");
+                Integer idToIncrease = scanner.nextInt();
+                scanner.nextLine();
+                System.out.println("Digite a porcentagem(%) de aumento no salário base: ");
+                double increasePercentage = scanner.nextDouble();
+                Payment payment = new Payment();
+                payment.increaseBaseSalary(idToIncrease, increasePercentage, employeeList);
 
             }
         }
