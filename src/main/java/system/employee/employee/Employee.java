@@ -15,6 +15,7 @@ public class Employee {
     private String name;
     private Integer id;
     private LocalDate birthDay;
+    private String email;
     private String role;
     private Integer age;
     private Payment payment;
@@ -22,10 +23,11 @@ public class Employee {
     public Employee() {
     }
 
-    public Employee(String name, Integer id, LocalDate birthDay, String role, Integer age, Payment payment) {
+    public Employee(String name, Integer id, LocalDate birthDay, String email, String role, Integer age, Payment payment) {
         this.name = name;
         this.id = id;
         this.birthDay = birthDay;
+        this.email = email;
         this.role = role;
         this.age = age;
         this.payment = payment;
@@ -75,6 +77,14 @@ public class Employee {
         return payment;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
     public void setPayment(Payment payment) {
         this.payment = payment;
     }
@@ -116,6 +126,8 @@ public class Employee {
         + " anos"
         + "\nData de nascimento: "
         + birthDay.format(formatter)
+        + "\nEmail: "
+        + getEmail()
         + "\nCargo: "
         + role
         + "\nSalário total: R$ "

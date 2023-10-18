@@ -3,6 +3,7 @@ import system.employee.employee.Payment;
 import system.employee.utilities.AgeCalculator;
 import system.employee.utilities.IdGenerator;
 
+import java.sql.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -17,9 +18,9 @@ public class EmployeeApplication {
         LocalDate now = LocalDate.now();
         List<Employee> employeeList = new ArrayList<>();
 
-        System.out.println("-=-=-=-=--=-");
+        System.out.println("-=-=-=-=--=-=-=-=");
         System.out.println("EMPLOYEE SYSTEM");
-        System.out.println("-=-=-=-=--=-");
+        System.out.println("-=-=-=-=--=-=-=-=");
 
         while (menuOption != 5) {
             System.out.println("\n1 - Cadastrar novo funcionário.");
@@ -36,12 +37,13 @@ public class EmployeeApplication {
                 String employeeName = scanner.nextLine();
                 System.out.print("Data de nascimento(DD/MM/AAAA): ");
                 String employeeBithDayStr = scanner.nextLine();
+                System.out.print("Digite o email: ");
+                String employeeEmail = scanner.nextLine();
                 LocalDate employeeBithDay = LocalDate.parse(employeeBithDayStr, formatter);
                 System.out.print("Cargo do funcionário: ");
                 String employeeRole = scanner.nextLine();
                 System.out.print("Salário base do funcionário: ");
                 Double salary = scanner.nextDouble();
-                Payment baseSalary = new Payment(salary);
 
                 IdGenerator idGenerator = new IdGenerator();
 
@@ -60,10 +62,47 @@ public class EmployeeApplication {
                 AgeCalculator ageCalculator = new AgeCalculator();
                 int employeeAge = ageCalculator.calculateAge(employeeBithDay, now);
 
-                Employee employee = new Employee(employeeName, employeeId, employeeBithDay, employeeRole,
-                        employeeAge, baseSalary);
+                Payment employeePayment = new Payment(salary);
 
-                employeeList.add(employee);
+
+
+                Employee employee = new Employee(employeeName, employeeId, employeeBithDay, employeeEmail, employeeRole,
+                        employeeAge, employeePayment);
+
+
+
+                java.sql.Date sqlDate = java.sql.Date.valueOf(employeeBithDay);
+                double salarySql = employeePayment.totalPayment();
+
+                try {
+                    Connection connection = DriverManager
+                            .getConnection("jdbc:mysql://localhost:3306/employeesDB", "root",
+                                    "alexandreprado123");
+
+                    String sql = "INSERT INTO registro_funcionarios (NOME, ID, DATA_NASCIMENTO, EMAIL, CARGO, IDADE, SALÁRIO)"
+                            + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+
+                    PreparedStatement preparedStatement = connection.prepareStatement(sql);
+                    preparedStatement.setString(1, employeeName);
+                    preparedStatement.setInt(2, employeeId);
+                    preparedStatement.setDate(3, sqlDate);
+                    preparedStatement.setString(4, employeeEmail);
+                    preparedStatement.setString(5, employeeRole);
+                    preparedStatement.setInt(6, employeeAge);
+                    preparedStatement.setDouble(7, salarySql);
+
+                    preparedStatement.executeUpdate();
+
+                    connection.close();
+
+
+                } catch (SQLException e) {
+                    System.out.println(e.getMessage());
+                }
+
+
+                // employeeList.add(employee);
 
 
             } else if (menuOption == 2) {
@@ -75,21 +114,21 @@ public class EmployeeApplication {
                 Integer idToRemove = scanner.nextInt();
                 Employee employee = new Employee();
                 employee.removeEmployee(idToRemove, employeeList);
-
-
             }
-            else if (menuOption == 4) {
-                System.out.println("\nDigite o Id do funcionário que receberá o aumento: ");
-                Integer idToIncrease = scanner.nextInt();
-                scanner.nextLine();
-                System.out.println("Digite a porcentagem(%) de aumento no salário base: ");
-                double increasePercentage = scanner.nextDouble();
-                Payment payment = new Payment();
-                payment.increaseBaseSalary(idToIncrease, increasePercentage, employeeList);
 
+            else if (menuOption == 4) {
+                System.out.print("\nDigite o Id do funcionário que receberá o aumento: ");
+                Integer idToIncrease = scanner.nextInt();
+                System.out.print("Digite a porcentagem(%) de aumento no salário base: ");
+                double increasePercentage = scanner.nextDouble();
+                for (Employee employee : employeeList){
+                    double increase = employee.getPayment().getSalary() * increasePercentage / 100;
+                    double increasedSalary = employee.getPayment().getSalary() + increase;
+                    employee.getPayment().setSalary(increasedSalary);
+                }
             }
         }
-        System.out.println("Programa encerrado");
+        System.out.println("\nPrograma encerrado...");
     }
 }
 

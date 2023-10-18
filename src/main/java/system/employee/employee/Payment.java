@@ -1,8 +1,5 @@
 package system.employee.employee;
 
-import java.util.Iterator;
-import java.util.List;
-
 public class Payment {
     private Double salary;
     public Payment() {
@@ -20,30 +17,8 @@ public class Payment {
         this.salary = salary;
     }
 
-    public double getMealAllowance() {
-        return salary * 0.2;
-    }
-    public double getBonus() {
-        return salary * 0.1;
-    }
-    public double getTransportation() {
-        return 20.0 * 26;
-    }
-    public Double increaseBaseSalary(Integer id , double percentage, List<Employee> employeeList) {
-        Iterator<Employee> employeeIterator = employeeList.iterator();
-        while (employeeIterator.hasNext()) {
-            Employee employee = employeeIterator.next();
-            if (id.equals(employee.getId())) {
-                return salary += (salary * (percentage / 100));
-            }
-            else {
-                System.out.println("Usuário não encontrado");
 
-            }
-        }
-        return 0.0;
-    }
     public double totalPayment() {
-        return salary + getBonus() + getTransportation() + getMealAllowance();
+        return getSalary();
     }
 }
