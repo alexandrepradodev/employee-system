@@ -105,16 +105,7 @@ public class Employee {
         return Objects.hash(name, id, birthDay, role, age, payment);
     }
 
-    public void removeEmployee(Integer idToRemove, List<Employee> employeeList) {
-        Iterator<Employee> employeeIterator = employeeList.iterator();
-        while (employeeIterator.hasNext()) {
-            Employee employee = employeeIterator.next();
-            if (idToRemove.equals(employee.getId())) {
-                employeeIterator.remove();
-            }
-        }
 
-    }
     @Override
     public String toString() {
         return "\nId: "

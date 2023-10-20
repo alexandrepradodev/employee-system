@@ -1,12 +1,16 @@
+import system.employee.employee.ConnectionFactory;
 import system.employee.employee.Employee;
+import system.employee.employee.EmployeeService;
 import system.employee.employee.Payment;
 import system.employee.utilities.AgeCalculator;
 import system.employee.utilities.IdGenerator;
 
 import java.sql.*;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.Date;
 
 public class EmployeeApplication {
 
@@ -50,85 +54,80 @@ public class EmployeeApplication {
                 boolean checkId = true;
                 int employeeId = 0;
 
-                /* Enquanto o Id existir, o programa vai gerar um ID que ainda não existe para que
-                possa instanciar o funcionárioc com ID único.
-                Esse ID será a chave primária do banco de dados que irei criar.*/
-
                 while (checkId) {
                     employeeId = idGenerator.generateId();
                     checkId = idGenerator.isIdPresent(employeeList, employeeId);
                 }
-                // Calcula a idade do funcionário.
                 AgeCalculator ageCalculator = new AgeCalculator();
                 int employeeAge = ageCalculator.calculateAge(employeeBithDay, now);
 
                 Payment employeePayment = new Payment(salary);
 
-
-
                 Employee employee = new Employee(employeeName, employeeId, employeeBithDay, employeeEmail, employeeRole,
                         employeeAge, employeePayment);
 
-
-
                 java.sql.Date sqlDate = java.sql.Date.valueOf(employeeBithDay);
                 double salarySql = employeePayment.totalPayment();
+                ConnectionFactory connectionFactory = new ConnectionFactory();
+
+                EmployeeService employeeService = new EmployeeService(connectionFactory);
+                employeeService.addNewEmployee(employeeName, employeeId, sqlDate, employeeEmail, employeeRole,
+                        employeeAge, salarySql);
+
+
+
+
+
+            } else if (menuOption == 2) {
 
                 try {
-                    Connection connection = DriverManager
-                            .getConnection("jdbc:mysql://localhost:3306/employeesDB", "root",
-                                    "alexandreprado123");
+                    Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/employeesDB", "root",
+                            "alexandreprado123");
 
-                    String sql = "INSERT INTO registro_funcionarios (NOME, ID, DATA_NASCIMENTO, EMAIL, CARGO, IDADE, SALÁRIO)"
-                            + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+                    Statement statement = connection.createStatement();
+                    String sql = "SELECT * FROM registro_funcionarios";
+                    ResultSet resultSet = statement.executeQuery(sql);
+                    while (resultSet.next()) {
+                        String nome = resultSet.getString(1);
+                        Integer id = resultSet.getInt(2);
+                        Date birthDate = resultSet.getDate(3);
+                        String email = resultSet.getString(4);
+                        String role = resultSet.getString(5);
+                        Integer age = resultSet.getInt(6);
+                        Double salary = resultSet.getDouble(7);
+
+                        Payment payment = new Payment(salary);
+                        LocalDate localDate = birthDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
 
-                    PreparedStatement preparedStatement = connection.prepareStatement(sql);
-                    preparedStatement.setString(1, employeeName);
-                    preparedStatement.setInt(2, employeeId);
-                    preparedStatement.setDate(3, sqlDate);
-                    preparedStatement.setString(4, employeeEmail);
-                    preparedStatement.setString(5, employeeRole);
-                    preparedStatement.setInt(6, employeeAge);
-                    preparedStatement.setDouble(7, salarySql);
+                        Employee employee = new Employee(nome, id, localDate, email, role, age, payment);
+                        employeeList.add(employee);
+                    }
 
-                    preparedStatement.executeUpdate();
-
-                    connection.close();
-
+                    for (Employee employee : employeeList) {
+                        System.out.println(employee);
+                    }
 
                 } catch (SQLException e) {
                     System.out.println(e.getMessage());
                 }
-
-
-                // employeeList.add(employee);
-
-
-            } else if (menuOption == 2) {
-                for (Employee employee : employeeList) {
-                    System.out.println("\n" + employee);
-                }
-            } else if (menuOption == 3) {
-                System.out.print("\nDigite a Id do funcionário que deseja excluir: ");
-                Integer idToRemove = scanner.nextInt();
-                Employee employee = new Employee();
-                employee.removeEmployee(idToRemove, employeeList);
             }
 
-            else if (menuOption == 4) {
+            else if (menuOption == 3) {
+            System.out.print("\nDigite a Id do funcionário que deseja excluir: ");
+
+        } else if (menuOption == 4) {
                 System.out.print("\nDigite o Id do funcionário que receberá o aumento: ");
                 Integer idToIncrease = scanner.nextInt();
                 System.out.print("Digite a porcentagem(%) de aumento no salário base: ");
                 double increasePercentage = scanner.nextDouble();
-                for (Employee employee : employeeList){
+                for (Employee employee : employeeList) {
                     double increase = employee.getPayment().getSalary() * increasePercentage / 100;
                     double increasedSalary = employee.getPayment().getSalary() + increase;
                     employee.getPayment().setSalary(increasedSalary);
                 }
             }
         }
-        System.out.println("\nPrograma encerrado...");
     }
 }
 
